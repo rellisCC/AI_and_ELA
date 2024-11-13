@@ -1,4 +1,4 @@
-// Load Pyodide and required packages
+// Attempt to Load Pyodide and required packages
 async function loadPyodideAndPackages() {
   console.log("Loading Pyodide...");
   // Specify the indexURL explicitly
