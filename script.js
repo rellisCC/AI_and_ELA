@@ -1,9 +1,9 @@
 // Load Pyodide and required packages
 async function loadPyodideAndPackages() {
   console.log("Loading Pyodide...");
-  // Initialize Pyodide with the correct index URL
+  // Specify the indexURL explicitly
   window.pyodide = await loadPyodide({
-    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.21.3/full/"  // Updated to latest stable version
+    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.21.3/full/"
   });
   await pyodide.loadPackage(['pandas', 'scikit-learn', 'matplotlib']);
   console.log("Pyodide loaded successfully.");
