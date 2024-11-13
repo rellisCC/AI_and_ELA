@@ -1,15 +1,16 @@
+// Load Pyodide and required packages
 async function loadPyodideAndPackages() {
   console.log("Loading Pyodide...");
-  // Initialize Pyodide
   window.pyodide = await loadPyodide();
   await pyodide.loadPackage(['pandas', 'scikit-learn', 'matplotlib']);
   console.log("Pyodide loaded successfully.");
 }
 
-// Load Pyodide and required packages
-loadPyodideAndPackages();
+let pyodideReady = loadPyodideAndPackages();
 
 async function generateGraph() {
+  await pyodideReady; // Ensure Pyodide is ready before running
+
   const fileInput = document.getElementById('csvUpload');
   const file = fileInput.files[0];
   
@@ -25,16 +26,18 @@ async function generateGraph() {
     const csvData = e.target.result;
 
     try {
+      // Escape CSV data for safe embedding in Python code
+      const csvDataEscaped = JSON.stringify(csvData);
+
       // Run Python code with Pyodide
       await pyodide.runPythonAsync(`
         import pandas as pd
         from io import StringIO
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.manifold import TSNE
-        import matplotlib.pyplot as plt
 
         # Load the CSV data into a DataFrame
-        csv_data = """${csvData}"""
+        csv_data = ${csvDataEscaped}
         data = pd.read_csv(StringIO(csv_data))
 
         # Extract the full dataset from each category
