@@ -1,12 +1,15 @@
 // Load Pyodide and required packages
 async function loadPyodideAndPackages() {
   console.log("Loading Pyodide...");
-  window.pyodide = await loadPyodide();
+  // Initialize Pyodide with the correct index URL
+  window.pyodide = await loadPyodide({
+    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.21.3/full/"  // Updated to latest stable version
+  });
   await pyodide.loadPackage(['pandas', 'scikit-learn', 'matplotlib']);
   console.log("Pyodide loaded successfully.");
 }
 
-let pyodideReady = loadPyodideAndPackages();
+let pyodideReady = loadPyodideAndPackages();  // Start loading Pyodide
 
 async function generateGraph() {
   await pyodideReady; // Ensure Pyodide is ready before running
