@@ -56,7 +56,7 @@ async function generateGraph() {
         X_tfidf = vectorizer.fit_transform(text_data)
 
         # Apply t-SNE using the full dataset
-        tsne = TSNE(n_components=2, random_state=42, perplexity=3, max_iter=300)
+        tsne = TSNE(n_components=2, random_state=42, perplexity=3, n_iter=300)
         X_embedded = tsne.fit_transform(X_tfidf.toarray())
 
         # Prepare data for Plotly
