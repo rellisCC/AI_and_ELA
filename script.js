@@ -10,141 +10,156 @@ async function loadPyodideAndPackages() {
 
 let pyodideReady = loadPyodideAndPackages(); // Start loading Pyodide
 
-// Show the input field for adding a custom phrase
-function showInputField() {
-  document.getElementById("userInputField").style.display = "block";
+// Handle dropdown file selection
+async function handleFileSelection() {
+  const dropdown = document.getElementById('preloadedFiles');
+  const selectedFile = dropdown.value;
+
+  if (selectedFile) {
+    try {
+      const response = await fetch(`files/${selectedFile}`);
+      if (!response.ok) {
+        throw new Error(`File not found: ${selectedFile}`);
+      }
+      const csvData = await response.text();
+      loadCSVData(csvData);
+    } catch (error) {
+      console.error("Error fetching the file:", error);
+      alert("Failed to load the selected file. Please ensure the file exists in the 'files/' directory.");
+    }
+  }
 }
 
-// Function to generate the initial graph from CSV data
+// Load CSV data
+function loadCSVData(csvData) {
+  window.csvData = csvData;
+  console.log("CSV data loaded:", csvData);
+}
+
+// Generate the graph from CSV data
 async function generateGraph() {
   await pyodideReady;
 
   const fileInput = document.getElementById('csvUpload');
-  const file = fileInput.files[0];
-  
-  if (!file) {
-    alert("Please upload a CSV file first!");
-    return;
+  const selectedFile = document.getElementById('preloadedFiles').value;
+
+  if (selectedFile) {
+    processCSVData(window.csvData);
+  } else if (fileInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => processCSVData(e.target.result);
+    reader.readAsText(fileInput.files[0]);
+  } else {
+    alert("Please select or upload a CSV file!");
   }
+}
 
-  console.log("File uploaded. Starting to process the file...");
-  const reader = new FileReader();
-  
-  reader.onload = async function(e) {
-    const csvData = e.target.result;
+// Process CSV Data and generate the graph
+async function processCSVData(csvData) {
+  try {
+    const csvDataEscaped = JSON.stringify(csvData);
 
-    try {
-      const csvDataEscaped = JSON.stringify(csvData);
+    // Run Python code with Pyodide
+    await pyodide.runPythonAsync(`
+      import pandas as pd
+      from io import StringIO
+      from sklearn.feature_extraction.text import TfidfVectorizer
+      from sklearn.manifold import TSNE
+      from sklearn.neighbors import NearestNeighbors
 
-      // Run Python code with Pyodide to process CSV and apply t-SNE
-      await pyodide.runPythonAsync(`
-        import pandas as pd
-        from io import StringIO
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.manifold import TSNE
-        from sklearn.neighbors import NearestNeighbors
+      # Load the CSV data into a DataFrame
+      csv_data = ${csvDataEscaped}
+      data = pd.read_csv(StringIO(csv_data))
 
-        # Load the CSV data into a DataFrame
-        csv_data = ${csvDataEscaped}
-        data = pd.read_csv(StringIO(csv_data))
+      # Extract the full dataset from each category
+      similar = data['Similar'].dropna().tolist()
+      opposite = data['Opposite'].dropna().tolist()
+      sideways = data['Sideways'].dropna().tolist()
 
-        # Extract the full dataset from each category
-        similar = data['Similar'].dropna().tolist()
-        opposite = data['Opposite'].dropna().tolist()
-        sideways = data['Sideways'].dropna().tolist()
+      # Combine all text data for TF-IDF vectorization
+      text_data = similar + opposite + sideways
 
-        # Combine all text data for TF-IDF vectorization
-        text_data = similar + opposite + sideways
+      # Vectorize the text data using TF-IDF
+      vectorizer = TfidfVectorizer()
+      X_tfidf = vectorizer.fit_transform(text_data)
 
-        # Vectorize the text data using TF-IDF
-        vectorizer = TfidfVectorizer()
-        X_tfidf = vectorizer.fit_transform(text_data)
+      # Apply t-SNE using the full dataset
+      tsne = TSNE(n_components=2, random_state=42, perplexity=3, n_iter=300)
+      X_embedded = tsne.fit_transform(X_tfidf.toarray())
 
-        # Apply t-SNE using the full dataset
-        tsne = TSNE(n_components=2, random_state=42, perplexity=3, n_iter=300)
-        X_embedded = tsne.fit_transform(X_tfidf.toarray())
+      # Prepare data for Plotly
+      x_values = X_embedded[:, 0].tolist()
+      y_values = X_embedded[:, 1].tolist()
+      labels = ['Similar'] * len(similar) + ['Opposite'] * len(opposite) + ['Sideways'] * len(sideways)
 
-        # Prepare data for Plotly
-        x_values = X_embedded[:, 0].tolist()
-        y_values = X_embedded[:, 1].tolist()
-        labels = ['Similar'] * len(similar) + ['Opposite'] * len(opposite) + ['Sideways'] * len(sideways)
+      # Save vectorizer and embeddings globally for reuse
+      global tfidf_vectorizer, tsne_embeddings
+      tfidf_vectorizer = vectorizer
+      tsne_embeddings = X_embedded
+    `);
 
-        # Save vectorizer and embeddings globally for reuse
-        global tfidf_vectorizer, tsne_embeddings
-        tfidf_vectorizer = vectorizer
-        tsne_embeddings = X_embedded
-      `);
+    console.log("Python code executed successfully.");
 
-      console.log("Python code executed successfully.");
+    // Retrieve data from Pyodide
+    const x_values = pyodide.globals.get('x_values').toJs();
+    const y_values = pyodide.globals.get('y_values').toJs();
+    const labels = pyodide.globals.get('labels').toJs();
+    const similar = pyodide.globals.get('similar').toJs();
+    const opposite = pyodide.globals.get('opposite').toJs();
+    const sideways = pyodide.globals.get('sideways').toJs();
+    const original_text = [...similar, ...opposite, ...sideways];
 
-      // Retrieve the data from Python
-      const x_values = pyodide.globals.get('x_values').toJs();
-      const y_values = pyodide.globals.get('y_values').toJs();
-      const labels = pyodide.globals.get('labels').toJs();
-      const similar = pyodide.globals.get('similar').toJs();
-      const opposite = pyodide.globals.get('opposite').toJs();
-      const sideways = pyodide.globals.get('sideways').toJs();
-      const original_text = [...similar, ...opposite, ...sideways];
+    // Define traces for each category
+    const traceSimilar = {
+      x: x_values.filter((_, i) => labels[i] === 'Similar'),
+      y: y_values.filter((_, i) => labels[i] === 'Similar'),
+      mode: 'markers',
+      type: 'scatter',
+      name: 'Similar',
+      text: original_text.filter((_, i) => labels[i] === 'Similar'),
+      marker: { color: 'blue', size: 10 }
+    };
 
-      // Define traces for each category with hover adjustments
-      const traceSimilar = {
-        x: x_values.filter((_, i) => labels[i] === 'Similar'),
-        y: y_values.filter((_, i) => labels[i] === 'Similar'),
-        mode: 'markers',
-        type: 'scatter',
-        name: 'Similar',
-        text: original_text.filter((_, i) => labels[i] === 'Similar'),
-        marker: { color: 'blue', size: 10 },
-        hoverinfo: 'text',
-        hovertemplate: '<b>%{text}</b><extra></extra>'
-      };
+    const traceOpposite = {
+      x: x_values.filter((_, i) => labels[i] === 'Opposite'),
+      y: y_values.filter((_, i) => labels[i] === 'Opposite'),
+      mode: 'markers',
+      type: 'scatter',
+      name: 'Opposite',
+      text: original_text.filter((_, i) => labels[i] === 'Opposite'),
+      marker: { color: 'green', size: 10 }
+    };
 
-      const traceOpposite = {
-        x: x_values.filter((_, i) => labels[i] === 'Opposite'),
-        y: y_values.filter((_, i) => labels[i] === 'Opposite'),
-        mode: 'markers',
-        type: 'scatter',
-        name: 'Opposite',
-        text: original_text.filter((_, i) => labels[i] === 'Opposite'),
-        marker: { color: 'green', size: 10 },
-        hoverinfo: 'text',
-        hovertemplate: '<b>%{text}</b><extra></extra>'
-      };
+    const traceSideways = {
+      x: x_values.filter((_, i) => labels[i] === 'Sideways'),
+      y: y_values.filter((_, i) => labels[i] === 'Sideways'),
+      mode: 'markers',
+      type: 'scatter',
+      name: 'Sideways',
+      text: original_text.filter((_, i) => labels[i] === 'Sideways'),
+      marker: { color: 'red', size: 10 }
+    };
 
-      const traceSideways = {
-        x: x_values.filter((_, i) => labels[i] === 'Sideways'),
-        y: y_values.filter((_, i) => labels[i] === 'Sideways'),
-        mode: 'markers',
-        type: 'scatter',
-        name: 'Sideways',
-        text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-        marker: { color: 'red', size: 10 },
-        hoverinfo: 'text',
-        hovertemplate: '<b>%{text}</b><extra></extra>'
-      };
+    const layout = {
+      title: "t-SNE Visualization of CSV Data",
+      xaxis: { title: "t-SNE Component 1" },
+      yaxis: { title: "t-SNE Component 2" },
+      showlegend: true
+    };
 
-      const layout = {
-        title: "t-SNE Visualization of CSV Data",
-        xaxis: { title: "t-SNE Component 1" },
-        yaxis: { title: "t-SNE Component 2" },
-        showlegend: true,
-        hovermode: 'closest', // Only show hover text when close to a point
-      };
+    Plotly.newPlot('output', [traceSimilar, traceOpposite, traceSideways], layout);
+    console.log("Graph plotted successfully.");
 
-      Plotly.newPlot('output', [traceSimilar, traceOpposite, traceSideways], layout);
-      console.log("Graph plotted successfully.");
+    // Show Step 3 input container for adding phrases
+    document.getElementById("userInputContainer").style.display = "block";
 
-    } catch (error) {
-      console.error("Error processing data or generating graph:", error);
-    }
-  };
-
-  reader.readAsText(file);
+  } catch (error) {
+    console.error("Error processing data or generating graph:", error);
+  }
 }
 
 // Function to add user-inputted phrase to the graph
 let userPhraseAdded = false; // Track if "User Phrase" legend entry was added
-
 async function addUserPhrase() {
   const userPhrase = document.getElementById("userPhrase").value;
   if (!userPhrase) {
