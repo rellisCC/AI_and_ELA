@@ -2,22 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Interactive Graph from CSV</title>
-  <!-- Use a verified Pyodide URL -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Graph with Custom Phrase</title>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.9.0/plotly.min.js"></script>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js"></script>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Upload CSV and Generate Graph</h1>
-  <input type="file" id="csvUpload" accept=".csv">
-  <button onclick="generateGraph()">Generate Graph</button>
 
-  <button onclick="showInputField()">Add my own phrase</button>
-  <div id="userInputField" style="display: none;">
-    <input type="text" id="userPhrase" placeholder="Enter your phrase here">
-    <button onclick="addUserPhrase()">Add Phrase to Graph</button>
+  <h1>Interactive t-SNE Graph with Custom Phrase</h1>
+
+  <!-- Step 1: Select Preloaded File or Choose File -->
+  <div>
+    <strong>Step 1:</strong>
+    <select id="preloadedFiles" onchange="handleFileSelection()" style="margin-left: 10px;">
+      <option value="">Select preloaded file...</option>
+      <option value="A_InMyYoungerAndMoreVulnerableYears.csv">A - In My Younger and More Vulnerable Years</option>
+      <option value="B_IveBeenTurningOverInMyMindEverSince.csv">B - I've Been Turning Over in My Mind Ever Since</option>
+      <option value="C_AllThePeopleInTheWorld.csv">C - All the People in the World</option>
+      <option value="D_HadTheAdvantagesThatYouVeHad.csv">D - Had the Advantages That You’ve Had</option>
+    </select>
+    or
+    <input type="file" id="csvUpload" accept=".csv" style="margin-left: 10px;">
   </div>
-  <div id="output"></div>
+
+  <!-- Step 2: Generate Graph -->
+  <div style="margin-top: 10px;">
+    <strong>Step 2:</strong>
+    <button onclick="generateGraph()" style="margin-left: 10px;">Generate graph</button>
+  </div>
+
+  <!-- Graph Output -->
+  <div id="output" style="width: 100%; height: 500px; margin-top: 20px;"></div>
+
+  <!-- Step 3: Add Phrase to Graph -->
+  <div id="userInputContainer" style="display: none; margin-top: 20px;">
+    <strong>Step 3:</strong>
+    <input type="text" id="userPhrase" placeholder="Enter your phrase" style="margin-left: 10px;">
+    <button onclick="addUserPhrase()" style="margin-left: 10px;">Add phrase to graph (repeat as necessary)</button>
+  </div>
+
+  <!-- Link to the JavaScript file -->
   <script src="script.js"></script>
+
+  <script>
+    async function loadPyodideAndPackages() {
+      console.log("Loading Pyodide...");
+      window.pyodide = await loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.22.1/full/"
+      });
+      await pyodide.loadPackage(['pandas', 'scikit-learn', 'matplotlib']);
+      console.log("Pyodide loaded successfully.");
+    }
+
+    let pyodideReady = loadPyodideAndPackages();
+
+    // Handle dropdown file selection
+    async function handleFileSelection() {
+      const dropdown = document.getElementById('preloadedFiles');
+      const selectedFile = dropdown.value;
+      
+      if (selectedFile) {
+        const response = await fetch(`./files/${selectedFile}`);
+        const csvData = await response.text();
+        loadCSVData(csvData);
+      }
+    }
+
+    // Load CSV data
+    function loadCSVData(csvData) {
+      window.csvData = csvData;
+      console.log("CSV data loaded:", csvData);
+    }
+
+    async function generateGraph() {
+      await pyodideReady;
+
+      const fileInput = document.getElementById('csvUpload');
+      const selectedFile = document.getElementById('preloadedFiles').value;
+
+      if (selectedFile) {
+        processCSVData(window.csvData);
+      } else if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => processCSVData(e.target.result);
+        reader.readAsText(fileInput.files[0]);
+      } else {
+        alert("Please select or upload a CSV file!");
+      }
+    }
+
+    async function processCSVData(csvData) {
+      // Your existing Pyodide and Plotly code for graph generation goes here.
+    }
+  </script>
+
 </body>
 </html>
