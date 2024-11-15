@@ -1,0 +1,103 @@
+/* General page styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+  }
+  
+  h1 {
+    color: #4CAF50;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* File upload section */
+  .file-upload-container {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+  }
+  
+  .custom-file-upload {
+    display: inline-block;
+    padding: 8px 12px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-file-upload:hover {
+    background-color: #45a049;
+  }
+  
+  #fileNameDisplay {
+    margin-top: 10px;
+    font-style: italic;
+    color: #555;
+  }
+  
+  /* Button styles */
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  button:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+    color: #999;
+  }
+  
+  /* Input field styles */
+  input[type="text"] {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 300px;
+  }
+  
+  input[type="file"] {
+    display: none; /* Hidden by default for custom file upload styling */
+  }
+  
+  /* Graph container */
+  #output {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Loading message */
+  #loadingMessage {
+    margin-top: 10px;
+    font-weight: bold;
+    color: blue;
+    display: none; /* Hidden by default */
+  }
+  
+  /* Step container spacing */
+  div {
+    margin-bottom: 15px;
+  }
+  
