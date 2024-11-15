@@ -7,6 +7,34 @@
   <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.9.0/plotly.min.js"></script>
   <script src="https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js"></script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .file-upload-container {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .custom-file-upload {
+      display: inline-block;
+      padding: 8px 12px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    #fileNameDisplay {
+      margin-top: 10px;
+      font-style: italic;
+      color: #555;
+    }
+    #loadingMessage {
+      margin-top: 10px;
+      font-weight: bold;
+      color: blue;
+      display: none; /* Hidden by default */
+    }
+  </style>
 </head>
 <body>
 
@@ -23,13 +51,18 @@
       <option value="D_HadTheAdvantagesThatYouVeHad.csv">D - Had the Advantages That You’ve Had</option>
     </select>
     or
-    <input type="file" id="csvUpload" accept=".csv" style="margin-left: 10px;">
+    <label for="csvUpload" class="custom-file-upload">Choose file</label>
+    <input type="file" id="csvUpload" style="display: none;" onchange="displayFileName()">
   </div>
+
+  <!-- Display chosen file name -->
+  <div id="fileNameDisplay" style="margin-top: 10px;"></div>
 
   <!-- Step 2: Generate Graph -->
   <div style="margin-top: 10px;">
     <strong>Step 2:</strong>
     <button onclick="generateGraph()" style="margin-left: 10px;">Generate graph</button>
+    <div id="loadingMessage">Please wait while your graph is created...</div>
   </div>
 
   <!-- Graph Output -->
@@ -57,10 +90,24 @@
 
     let pyodideReady = loadPyodideAndPackages();
 
+    // Display chosen custom file name
+    function displayFileName() {
+      const fileInput = document.getElementById('csvUpload');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const fileName = fileInput.files[0].name;
+      fileNameDisplay.textContent = `Selected file: ${fileName}`;
+    }
+
     // Handle dropdown file selection
     async function handleFileSelection() {
       const dropdown = document.getElementById('preloadedFiles');
       const selectedFile = dropdown.value;
+
+      // Clear custom file input display if dropdown selection is used
+      const fileNameDisplay = document.getElementById("fileNameDisplay");
+      fileNameDisplay.textContent = selectedFile 
+        ? `Selected file: ${selectedFile}`
+        : "";
       
       if (selectedFile) {
         const response = await fetch(`./files/${selectedFile}`);
@@ -76,21 +123,30 @@
     }
 
     async function generateGraph() {
+      const loadingMessage = document.getElementById('loadingMessage');
+      loadingMessage.style.display = 'block'; // Show loading message
+
       await pyodideReady;
 
       const fileInput = document.getElementById('csvUpload');
       const selectedFile = document.getElementById('preloadedFiles').value;
 
       if (selectedFile) {
-        processCSVData(window.csvData);
+        processCSVData(window.csvData).finally(() => {
+          loadingMessage.style.display = 'none'; // Hide loading message
+        });
       } else if (fileInput.files[0]) {
         const reader = new FileReader();
-        reader.onload = (e) => processCSVData(e.target.result);
+        reader.onload = (e) => processCSVData(e.target.result).finally(() => {
+          loadingMessage.style.display = 'none'; // Hide loading message
+        });
         reader.readAsText(fileInput.files[0]);
       } else {
         alert("Please select or upload a CSV file!");
+        loadingMessage.style.display = 'none'; // Hide loading message
       }
     }
+    
 
     async function processCSVData(csvData) {
       // Your existing Pyodide and Plotly code for graph generation goes here.
@@ -98,4 +154,6 @@
   </script>
 
 </body>
+</html>
+
 </html>
