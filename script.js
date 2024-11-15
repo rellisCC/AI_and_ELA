@@ -10,12 +10,35 @@ async function loadPyodideAndPackages() {
 
 let pyodideReady = loadPyodideAndPackages(); // Start loading Pyodide
 
-// Handle dropdown file selection
+function updateFileLabel() {
+  const fileInput = document.getElementById('csvUpload');
+  const fileLabel = document.getElementById('fileLabel');
+  fileLabel.textContent = fileInput.files[0] ? fileInput.files[0].name : 'No file selected';
+}
+// Display the chosen file name (either from the dropdown or file upload)
+function displayFileName(source) {
+  const fileNameDisplay = document.getElementById('fileNameDisplay');
+
+  if (source === 'dropdown') {
+    const dropdown = document.getElementById('preloadedFiles');
+    const selectedFile = dropdown.options[dropdown.selectedIndex].text;
+    fileNameDisplay.textContent = `Selected file from dropdown: ${selectedFile}`;
+  } else if (source === 'upload') {
+    const fileInput = document.getElementById('csvUpload');
+    if (fileInput.files[0]) {
+      const fileName = fileInput.files[0].name;
+      fileNameDisplay.textContent = `Uploaded file: ${fileName}`;
+    }
+  }
+}
+
+// Modify existing dropdown and file input onchange events
 async function handleFileSelection() {
   const dropdown = document.getElementById('preloadedFiles');
   const selectedFile = dropdown.value;
 
   if (selectedFile) {
+    displayFileName('dropdown'); // Display the selected file name from the dropdown
     try {
       const response = await fetch(`files/${selectedFile}`);
       if (!response.ok) {
@@ -30,6 +53,10 @@ async function handleFileSelection() {
   }
 }
 
+function updateFileLabel() {
+  displayFileName('upload'); // Display the selected file name from the file input
+}
+
 // Load CSV data
 function loadCSVData(csvData) {
   window.csvData = csvData;
@@ -42,17 +69,32 @@ async function generateGraph() {
 
   const fileInput = document.getElementById('csvUpload');
   const selectedFile = document.getElementById('preloadedFiles').value;
+  const loadingMessage = document.getElementById('loadingMessage');
+
+  // Show the loading message
+  loadingMessage.style.display = 'block';
 
   if (selectedFile) {
-    processCSVData(window.csvData);
+    processCSVData(window.csvData).finally(() => {
+      // Hide the loading message
+      loadingMessage.style.display = 'none';
+    });
   } else if (fileInput.files[0]) {
     const reader = new FileReader();
-    reader.onload = (e) => processCSVData(e.target.result);
+    reader.onload = (e) => {
+      processCSVData(e.target.result).finally(() => {
+        // Hide the loading message
+        loadingMessage.style.display = 'none';
+      });
+    };
     reader.readAsText(fileInput.files[0]);
   } else {
     alert("Please select or upload a CSV file!");
+    // Hide the loading message if no file is selected
+    loadingMessage.style.display = 'none';
   }
 }
+
 
 // Process CSV Data and generate the graph
 async function processCSVData(csvData) {
@@ -117,7 +159,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Similar',
       text: original_text.filter((_, i) => labels[i] === 'Similar'),
-      marker: { color: 'blue', size: 10 }
+      marker: { color: '#0072B2', size: 10 }, // Blue
+      hoverinfo: 'text', // Only show the text
+      hovertemplate: '<b style="background-color:#0072B2;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const traceOpposite = {
@@ -127,7 +171,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Opposite',
       text: original_text.filter((_, i) => labels[i] === 'Opposite'),
-      marker: { color: 'green', size: 10 }
+      marker: { color: '#56B4E9', size: 10 }, // Teal
+      hoverinfo: 'text', // Only show the text
+      hovertemplate: '<b style="background-color:#56B4E9;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const traceSideways = {
@@ -137,7 +183,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Sideways',
       text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-      marker: { color: 'red', size: 10 }
+      marker: { color: '#E69F00', size: 10 }, // Orange
+      hoverinfo: 'text', // Only show the text
+      hovertemplate: '<b style="background-color:#E69F00;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const layout = {
@@ -168,30 +216,31 @@ async function addUserPhrase() {
   }
 
   try {
-    // Run Python code with Pyodide to find nearest neighbor in high-dimensional TF-IDF space
-    await pyodide.runPythonAsync(`
-      import numpy as np
-      from sklearn.neighbors import NearestNeighbors
-
-      # Vectorize the new input
-      new_tfidf = tfidf_vectorizer.transform(["${userPhrase}"]).toarray()
-
-      # Fit NearestNeighbors model on original TF-IDF space
-      nn_model = NearestNeighbors(n_neighbors=1).fit(X_tfidf.toarray())
-      _, indices = nn_model.kneighbors(new_tfidf)
-
-      # Get the t-SNE coordinates of the nearest neighbor and add a slight offset
-      nearest_idx = indices[0][0]
-      base_x, base_y = tsne_embeddings[nearest_idx]
-
-      # Apply a slight random offset to prevent overlapping
-      offset = np.random.normal(0, 0.2, 2)  # Adjust standard deviation as needed
-      new_x, new_y = base_x + offset[0], base_y + offset[1]
-
-      print("Nearest neighbor index:", nearest_idx)
-      print("Original t-SNE coordinates:", base_x, base_y)
-      print("Offset t-SNE coordinates:", new_x, new_y)
-    `);
+        // Run Python code with Pyodide to find nearest neighbor in high-dimensional TF-IDF space
+        await pyodide.runPythonAsync(`
+          import numpy as np
+          from sklearn.neighbors import NearestNeighbors
+    
+          # Vectorize the new input
+          new_tfidf = tfidf_vectorizer.transform(["${userPhrase}"]).toarray()
+    
+          # Fit NearestNeighbors model on original TF-IDF space
+          nn_model = NearestNeighbors(n_neighbors=1).fit(X_tfidf.toarray())
+          _, indices = nn_model.kneighbors(new_tfidf)
+    
+          # Get the t-SNE coordinates of the nearest neighbor and add a slight offset
+          nearest_idx = indices[0][0]
+          base_x, base_y = tsne_embeddings[nearest_idx]
+    
+          # Apply a slight random offset to prevent overlapping
+          offset = np.random.normal(0, 0.2, 2)  # Adjust standard deviation as needed
+          new_x, new_y = base_x + offset[0], base_y + offset[1]
+    
+          print("Nearest neighbor index:", nearest_idx)
+          print("Original t-SNE coordinates:", base_x, base_y)
+          print("Offset t-SNE coordinates:", new_x, new_y)
+        `);
+    
 
     // Retrieve the offset coordinates
     const new_x = pyodide.globals.get('new_x');
@@ -199,7 +248,7 @@ async function addUserPhrase() {
 
     console.log("New point coordinates (with jitter):", new_x, new_y);
 
-    // Add the new point to the existing graph with improved hover behavior
+    // Add the new point to the existing graph
     Plotly.addTraces('output', [{
       x: [new_x],
       y: [new_y],
@@ -222,3 +271,4 @@ async function addUserPhrase() {
     console.error("Error adding user phrase to graph:", error);
   }
 }
+
