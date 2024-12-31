@@ -189,9 +189,9 @@ async function processCSVData(csvData) {
     };
 
     const layout = {
-      title: "t-SNE Visualization of CSV Data",
-      xaxis: { title: "t-SNE Component 1" },
-      yaxis: { title: "t-SNE Component 2" },
+      title: "A t-SNE Visualization of Possible Phrases for Your Selected Phrase",
+      xaxis: { title: "" },
+      yaxis: { title: "" },
       showlegend: true
     };
 
