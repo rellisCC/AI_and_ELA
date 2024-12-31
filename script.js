@@ -171,7 +171,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Opposite',
       text: original_text.filter((_, i) => labels[i] === 'Opposite'),
-      marker: { color: '#E69F00', size: 10 }, // Orange
+      marker: { color: '#D55E00', size: 10 }, // Orange
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#56B4E9;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
