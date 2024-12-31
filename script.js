@@ -159,7 +159,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Similar',
       text: original_text.filter((_, i) => labels[i] === 'Similar'),
-      marker: { color: '#56B4E9', size: 10 }, // Blue, using colos from davidmathlogic and Bang Wong
+      marker: { color: '#648fff, size: 10 }, // Blue, using colos from observablehq.com
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#0072B2;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -171,7 +171,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Opposite',
       text: original_text.filter((_, i) => labels[i] === 'Opposite'),
-      marker: { color: '#D55E00', size: 10 }, // Orange
+      marker: { color: '#dc267f', size: 10 }, // Magenta
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#56B4E9;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -183,7 +183,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Sideways',
       text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-      marker: { color: '#009E73', size: 10 }, // Green
+      marker: { color: '#ffb000', size: 10 }, // Gold
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#E69F00;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
