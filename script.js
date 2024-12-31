@@ -159,7 +159,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Similar',
       text: original_text.filter((_, i) => labels[i] === 'Similar'),
-      marker: { color: '#FFC107', size: 10 }, // Blue, using colos from davidmathlogic and Bang Wong
+      marker: { color: '#56B4E9', size: 10 }, // Blue, using colos from davidmathlogic and Bang Wong
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#0072B2;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -256,7 +256,7 @@ async function addUserPhrase() {
       type: 'scatter',
       name: 'User Phrase',
       text: [userPhrase],
-      marker: { color: '#CC79A7', size: 12 }, // Pink
+      marker: { color: '#000000', size: 12 }, // Black
       showlegend: !userPhraseAdded, // Only show legend for the first user phrase
       hoverinfo: 'text',  // Show only the text on hover
       hovertemplate: '<b>%{text}</b><extra></extra>' // Control hover popup format
