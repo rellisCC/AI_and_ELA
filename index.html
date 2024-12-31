@@ -42,7 +42,7 @@
 
   <!-- Step 1: Select Preloaded File or Choose File -->
   <div>
-    <strong>Step 1:</strong> Choose from this dropdown menu: 
+    <strong>Step 1:</strong> Select: 
     <select id="preloadedFiles" onchange="handleFileSelection()" style="margin-left: 10px;">
       <option value="">Select preloaded file...</option>
       <option value="A_InMyYoungerAndMoreVulnerableYears.csv">A - In My Younger and More Vulnerable Years</option>
@@ -53,7 +53,7 @@
     or
     <label for="csvUpload" class="custom-file-upload">Choose file</label>
     <input type="file" id="csvUpload" style="display: none;" onchange="displayFileName()">
-    which should be a CSV with three columns, titled Similar, Opposite, and Sideways.
+    <span class="description">a CSV with three columns, titled Similar, Opposite, and Sideways.</span>
   </div>
 
   <!-- Display chosen file name -->
