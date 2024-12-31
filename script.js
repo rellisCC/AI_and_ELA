@@ -256,7 +256,7 @@ async function addUserPhrase() {
       mode: 'markers+text',
       type: 'scatter',
       name: 'Your Phrase',
-      //text: [userPhrase],
+      #text: [userPhrase],
       marker: { color: '#000000', size: 12 }, // Black
       showlegend: !userPhraseAdded, // Only show legend for the first user phrase
       hoverinfo: 'text',  // Show only the text on hover
