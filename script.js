@@ -159,7 +159,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Similar',
       text: original_text.filter((_, i) => labels[i] === 'Similar'),
-      marker: { color: '#D55E00', size: 10 }, // Blue changed to red
+      marker: { color: '#FFC107', size: 10 }, // Blue, using colos from davidmathlogic and Bang Wong
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#0072B2;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -171,7 +171,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Opposite',
       text: original_text.filter((_, i) => labels[i] === 'Opposite'),
-      marker: { color: '#56B4E9', size: 10 }, // Teal
+      marker: { color: '#E69F00', size: 10 }, // Orange
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#56B4E9;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -183,7 +183,7 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Sideways',
       text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-      marker: { color: '#E69F00', size: 10 }, // Orange
+      marker: { color: '#009E73', size: 10 }, // Green
       hoverinfo: 'text', // Only show the text
       hovertemplate: '<b style="background-color:#E69F00;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
@@ -256,7 +256,7 @@ async function addUserPhrase() {
       type: 'scatter',
       name: 'User Phrase',
       text: [userPhrase],
-      marker: { color: '#CC79A7', size: 12 }, //word 'purple' changed to hexcode
+      marker: { color: '#CC79A7', size: 12 }, // Pink
       showlegend: !userPhraseAdded, // Only show legend for the first user phrase
       hoverinfo: 'text',  // Show only the text on hover
       hovertemplate: '<b>%{text}</b><extra></extra>' // Control hover popup format
