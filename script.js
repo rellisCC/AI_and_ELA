@@ -253,10 +253,10 @@ async function addUserPhrase() {
     Plotly.addTraces('output', [{
       x: [new_x],
       y: [new_y],
-      mode: 'markers+text',
+      mode: 'markers',
       type: 'scatter',
       name: 'Your Phrase',
-      #text: [userPhrase],
+      text: [userPhrase],
       marker: { color: '#000000', size: 12 }, // Black
       showlegend: !userPhraseAdded, // Only show legend for the first user phrase
       hoverinfo: 'text',  // Show only the text on hover
