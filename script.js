@@ -159,9 +159,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Similar',
       text: original_text.filter((_, i) => labels[i] === 'Similar'),
-      marker: { color: '#648fff, size: 10 }, // Blue, using colos from observablehq.com
+      marker: { color: '#648fff', size: 10 }, // Blue, using colos from observablehq.com
       hoverinfo: 'text', // Only show the text
-      hovertemplate: '<b style="background-color:#0072B2;color:white;padding:5px;">%{text}</b><extra></extra>'
+      hovertemplate: '<b style="background-color:#648fff;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const traceOpposite = {
@@ -173,7 +173,7 @@ async function processCSVData(csvData) {
       text: original_text.filter((_, i) => labels[i] === 'Opposite'),
       marker: { color: '#dc267f', size: 10 }, // Magenta
       hoverinfo: 'text', // Only show the text
-      hovertemplate: '<b style="background-color:#56B4E9;color:white;padding:5px;">%{text}</b><extra></extra>'
+      hovertemplate: '<b style="background-color:#dc267f;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const traceSideways = {
@@ -183,9 +183,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Sideways',
       text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-      marker: { color: '#ffb000', size: 10 }, // Gold
+      marker: { color: '#dc267f', size: 10 }, // Gold
       hoverinfo: 'text', // Only show the text
-      hovertemplate: '<b style="background-color:#E69F00;color:white;padding:5px;">%{text}</b><extra></extra>'
+      hovertemplate: '<b style="background-color:#dc267f;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const layout = {
