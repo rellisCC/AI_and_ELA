@@ -183,9 +183,9 @@ async function processCSVData(csvData) {
       type: 'scatter',
       name: 'Sideways',
       text: original_text.filter((_, i) => labels[i] === 'Sideways'),
-      marker: { color: '#ffb000', size: 10 }, // Gold
+      marker: { color: '#f28e2b', size: 10 }, // Gold
       hoverinfo: 'text', // Only show the text
-      hovertemplate: '<b style="background-color:#ffb000;color:white;padding:5px;">%{text}</b><extra></extra>'
+      hovertemplate: '<b style="background-color:#f28e2b;color:white;padding:5px;">%{text}</b><extra></extra>'
     };
 
     const layout = {
